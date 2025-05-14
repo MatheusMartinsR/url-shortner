@@ -1,6 +1,7 @@
 package com.matheus.url_shortner.services;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,22 @@ public class UrlService {
     return shortUrl;
   }
 
-  public String generateShortUrl() {
+  public Optional<Url> getOriginalUrl(String shortUrl) {
+    Optional<Url> urlOpinional = urlRepository.findByShortUrl(shortUrl);
+    if (urlOpinional.isPresent()) {
+      Url url = urlOpinional.get();
+      if (url.getExpirationDate().isAfter(LocalDateTime.now())) {
+        return Optional.of(url);
+
+      } else {
+        urlRepository.delete(url);
+      }
+    }
+    return Optional.empty();
+
+  }
+
+  private String generateShortUrl() {
     String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     StringBuilder shortUrl = new StringBuilder();
     Random random = new Random();
